@@ -31,26 +31,40 @@ To the agents, it feels like a native API call. To the blockchain, it's a clean 
 ---
 
 ## Architecture
-Buyer Agent                    Seller Agent
-│                               │
-│ create_escrow()               │
-│ locks 0.1 SOL in vault        │
-▼                               │
-EscrowState PDA (Solana L1)        │
-│                               │
-│         ┌─────────────────────┘
-│         │ submit signal (private)
-│         ▼
-│   MagicBlock PER / TEE
-│   ┌─────────────────────┐
-│   │  Verify(confidence  │
-│   │  >= threshold)      │
-│   │  PRIVATE EXECUTION  │
-│   └─────────┬───────────┘
-│             │ result only
-▼             ▼
-verify_and_settle() on Solana L1
-SOL → Seller | Nothing leaked
+
+### 5-Phase Flow
+
+**Phase 1 — Create Escrow (Solana L1)**
+- Buyer calls `create_escrow` with amount + confidence threshold
+- Funds locked in a vault PDA on Solana mainnet
+- `EscrowState` PDA created: stores buyer, seller, amount, threshold, status
+
+**Phase 2 — Signal Submission (MagicBlock PER)**
+- Seller delegates their commitment account to the Private Ephemeral Rollup
+- Raw signal data sent directly into the TEE
+- Ciphertext only — nothing readable on L1
+
+**Phase 3 — Blind Verification (Intel TDX TEE)**
+- "Judge" program executes inside the secure enclave
+- Checks: `signal.confidence >= buyer_threshold`
+- Nobody outside the TEE sees the confidence value — not even MagicBlock's operator
+
+**Phase 4 — Settlement (Solana L1)**
+- PER commits verification result back to Solana L1
+- If verified: `settle_escrow` transfers SOL to seller
+- If failed: buyer calls `cancel_escrow` to reclaim funds
+
+**Phase 5 — Finalize**
+- `EscrowState` status flips to Settled or Cancelled
+- Full audit trail on-chain — result only, data never leaked
+
+### Account Structure
+
+| Account | Type | Description |
+|---|---|---|
+| `EscrowState` | PDA | Stores buyer, seller, amount, threshold, status |
+| Vault | PDA | Holds locked SOL during escrow |
+| `CommitmentAccount` | PER account | Seller's ciphertext inside private session |
 
 ---
 
