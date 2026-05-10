@@ -1,0 +1,9 @@
+{
+  "escrowPDA": "8vU9Edeh5QZWykRHFmp5xVgXBN4EgsLNArdbKJor6WnS",
+  "vaultPDA": "5mJCRxTBujNLXE6SsqNa6c6fFtEtdZKezZBoaS4qHhQ5",
+  "buyer": "8opkdraHTPWAK7dJCyYwxD48HWJxyAg73PzmdVUVR2q2",
+  "seller": "DMu3Luok3mR7A9ozLH8iYTXkBNYx43P4jLLeE2NDgSYm",
+  "amount": 0.1,
+  "threshold": 75,
+  "tx": "5YJfK9Ds3icXrCZ9mNoUMnTPWYN3gnqehS7A9po1zTYHYLUVW4Dgf3FpSjBJpdTnV7yZ1aadTUVsuREqppSvhGC4"
+}
